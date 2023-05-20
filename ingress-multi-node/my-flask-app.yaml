@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: my-flask-app
+  name: my-flask-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-flask-app
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: my-flask-app
+    spec:
+      containers:
+      - image: my-flask-app:kind-v1
+        name: my-flask-app
+        resources: {}
+status: {}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: my-flask-app-service
+spec:
+  selector:
+    app: my-flask-app
+  ports:
+    # Default port used by the image
+    - port: 5000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-flask-app-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: /monitoring
+            backend:
+              service:
+                name: my-flask-app-service
+                port:
+                  number: 5000
+---
